@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Teacher Dashboard - Group Records</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Teacher dashboard for all group records">
+  <meta name="theme-color" content="#4285f4">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 10px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Login Screen */
+    .login-container {
+      max-width: 400px;
+      margin: 100px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+
+    .login-container h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+
+    .login-container p {
+      text-align: center;
+      color: #666;
+      margin-bottom: 25px;
+      font-size: 14px;
+    }
+
+    .login-form input {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+
+    .login-form input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .login-form button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .login-form button:hover {
+      transform: translateY(-2px);
+    }
+
+    .login-error {
+      color: #ef4444;
+      font-size: 14px;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    /* Dashboard */
+    .dashboard {
+      display: none;
+    }
+
+    .dashboard.active {
+      display: block;
+    }
+
+    .header {
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .header h1 {
+      color: #333;
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 15px;
+    }
+
+    .class-selector {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .class-selector select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      background: white;
+    }
+
+    .refresh-btn, .logout-btn, .export-btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .refresh-btn {
+      background: #10b981;
+      color: white;
+    }
+
+    .export-btn {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .logout-btn {
+      background: #ef4444;
+      color: white;
+    }
+
+    .refresh-btn:hover, .logout-btn:hover, .export-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .sync-status {
+      background: #f0f9ff;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border-left: 4px solid #3b82f6;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: #1e40af;
+    }
+
+    .groups-container {
+      display: grid;
+      gap: 20px;
+    }
+
+    .group-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .group-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .group-info {
+      font-size: 13px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .group-badge {
+      padding: 6px 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+      font-style: italic;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f8f9fa;
+      padding: 12px 8px;
+      text-align: left;
+      font-weight: 600;
+      color: #555;
+      border-bottom: 2px solid #e0e0e0;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    td {
+      padding: 12px 8px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    tr:hover {
+      background: #f8f9fa;
+    }
+
+    .empty-row {
+      display: none;
+    }
+
+    .student-name {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .score {
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    .loading::after {
+      content: '...';
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+
+    @keyframes dots {
+      0%, 20% { content: '.'; }
+      40% { content: '..'; }
+      60%, 100% { content: '...'; }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 8px;
+      }
+
+      .header {
+        padding: 15px;
+      }
+
+      .header h1 {
+        font-size: 20px;
+      }
+
+      .header-controls {
+        flex-direction: column;
+      }
+
+      .class-selector {
+        width: 100%;
+      }
+
+      .refresh-btn, .logout-btn, .export-btn {
+        width: 100%;
+      }
+
+      .group-card {
+        padding: 15px;
+      }
+
+      .group-title {
+        font-size: 18px;
+      }
+
+      table {
+        font-size: 12px;
+      }
+
+      th, td {
+        padding: 8px 4px;
+      }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1f2937;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <!-- Login Screen -->
+  <div id="loginScreen" class="login-container">
+    <h1>👨‍🏫 Teacher Dashboard</h1>
+    <p>Access all group records and summaries</p>
+    <form class="login-form" onsubmit="return false;">
+      <input 
+        type="text" 
+        id="loginUsername" 
+        placeholder="Teacher Username" 
+        autocomplete="username"
+        required>
+      <input 
+        type="password" 
+        id="loginPassword" 
+        placeholder="Password" 
+        autocomplete="current-password"
+        required>
+      <button type="button" onclick="handleLogin()">Login</button>
+      <div id="loginError" class="login-error"></div>
+    </form>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard" class="dashboard container">
+    <div class="header">
+      <h1>📊 Teacher Dashboard</h1>
+      <div class="header-controls">
+        <div class="class-selector">
+          <select id="classSelect" onchange="loadClassData()">
+            <option value="class1">Class 1</option>
+            <option value="class2">Class 2</option>
+            <option value="class3">Class 3</option>
+            <option value="class4">Class 4</option>
+            <option value="class5">Class 5</option>
+            <option value="class6">Class 6</option>
+          </select>
+        </div>
+        <button class="refresh-btn" onclick="loadClassData()">🔄 Refresh</button>
+        <button class="export-btn" onclick="exportAllData()">📥 Export CSV</button>
+        <button class="logout-btn" onclick="handleLogout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="sync-status" id="syncStatus">
+      Loading data...
+    </div>
+
+    <div id="groupsContainer" class="groups-container">
+      <div class="loading">Loading groups</div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // Teacher credentials
+    const TEACHER_USERNAME = 'teacher';
+    const TEACHER_PASSWORD = 'teacherpass';
+
+    let currentClass = 'class1';
+    let isLoggedIn = false;
+
+    // Storage key pattern: math-record-{class}-{group}
+    const GROUPS = ['group1', 'group2', 'group3', 'group4', 'group5'];
+
+    function handleLogin() {
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const errorDiv = document.getElementById('loginError');
+
+      if (username === TEACHER_USERNAME && password === TEACHER_PASSWORD) {
+        isLoggedIn = true;
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('dashboard').classList.add('active');
+        loadClassData();
+        errorDiv.textContent = '';
+      } else {
+        errorDiv.textContent = 'Invalid credentials';
+      }
+    }
+
+    function handleLogout() {
+      if (confirm('Are you sure you want to logout?')) {
+        isLoggedIn = false;
+        document.getElementById('loginScreen').classList.remove('hidden');
+        document.getElementById('dashboard').classList.remove('active');
+        document.getElementById('loginUsername').value = '';
+        document.getElementById('loginPassword').value = '';
+      }
+    }
+
+    async function loadClassData() {
+      if (!isLoggedIn) return;
+
+      currentClass = document.getElementById('classSelect').value;
+      const container = document.getElementById('groupsContainer');
+      const statusDiv = document.getElementById('syncStatus');
+
+      container.innerHTML = '<div class="loading">Loading groups</div>';
+      statusDiv.textContent = 'Loading data...';
+
+      const groupsData = [];
+
+      // Load data for all 5 groups
+      for (let i = 0; i < GROUPS.length; i++) {
+        const groupKey = GROUPS[i];
+        const storageKey = `math-record-${currentClass}-${groupKey}`;
+        
+        try {
+          const result = await window.storage.get(storageKey, true);
+          if (result && result.value) {
+            const data = JSON.parse(result.value);
+            groupsData.push({
+              groupNumber: i + 1,
+              groupKey: groupKey,
+              data: data,
+              hasData: true
+            });
+          } else {
+            groupsData.push({
+              groupNumber: i + 1,
+              groupKey: groupKey,
+              hasData: false
+            });
+          }
+        } catch (error) {
+          console.error(`Error loading ${storageKey}:`, error);
+          groupsData.push({
+            groupNumber: i + 1,
+            groupKey: groupKey,
+            hasData: false
+          });
+        }
+      }
+
+      renderGroups(groupsData);
+      
+      const className = currentClass.replace('class', 'Class ');
+      const loadedCount = groupsData.filter(g => g.hasData).length;
+      statusDiv.textContent = `${className}: Loaded ${loadedCount} of 5 groups`;
+    }
+
+    function renderGroups(groupsData) {
+      const container = document.getElementById('groupsContainer');
+      container.innerHTML = '';
+
+      groupsData.forEach(group => {
+        const card = document.createElement('div');
+        card.className = 'group-card';
+
+        const header = document.createElement('div');
+        header.className = 'group-header';
+        
+        const titleSection = document.createElement('div');
+        const title = document.createElement('div');
+        title.className = 'group-title';
+        title.textContent = `Group ${group.groupNumber}`;
+        
+        const info = document.createElement('div');
+        info.className = 'group-info';
+        
+        if (group.hasData) {
+          const leaderName = group.data.leader || 'Not set';
+          const section = group.data.section || 'Not set';
+          info.textContent = `Leader: ${leaderName} | Section: ${section}`;
+        } else {
+          info.textContent = 'No data submitted yet';
+        }
+        
+        titleSection.appendChild(title);
+        titleSection.appendChild(info);
+        
+        const badge = document.createElement('div');
+        badge.className = 'group-badge';
+        badge.textContent = group.hasData ? '✓ Active' : '○ Empty';
+        
+        header.appendChild(titleSection);
+        header.appendChild(badge);
+        card.appendChild(header);
+
+        if (group.hasData && group.data.table5) {
+          const tableWrapper = document.createElement('div');
+          tableWrapper.className = 'table-wrapper';
+          
+          const table = document.createElement('table');
+          table.innerHTML = `
+            <thead>
+              <tr>
+                <th>Last Name</th>
+                <th>First Name</th>
+                <th class="score">Activity</th>
+                <th class="score">Practice</th>
+                <th class="score">Quiz</th>
+                <th class="score">Recitation</th>
+                <th class="score">Lessons</th>
+                <th class="score">Summative</th>
+                <th class="score">Flashcards</th>
+              </tr>
+            </thead>
+            <tbody id="group${group.groupNumber}Body"></tbody>
+          `;
+          
+          tableWrapper.appendChild(table);
+          card.appendChild(tableWrapper);
+
+          const tbody = table.querySelector('tbody');
+          
+          group.data.table5.forEach(row => {
+            // Skip empty rows (both first and last name are empty)
+            if (!row[0]?.trim() && !row[1]?.trim()) {
+              return;
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td class="student-name">${row[0] || ''}</td>
+              <td class="student-name">${row[1] || ''}</td>
+              <td class="score">${row[2] || '-'}</td>
+              <td class="score">${row[3] || '-'}</td>
+              <td class="score">${row[4] || '-'}</td>
+              <td class="score">${row[5] || '-'}</td>
+              <td class="score">${row[6] || '-'}</td>
+              <td class="score">${row[7] || '-'}</td>
+              <td class="score">${row[8] || '-'}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+
+          // If no students added yet
+          if (tbody.children.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" class="no-data">No students added yet</td></tr>';
+          }
+
+        } else {
+          const noData = document.createElement('div');
+          noData.className = 'no-data';
+          noData.textContent = '📭 No records submitted yet';
+          card.appendChild(noData);
+        }
+
+        container.appendChild(card);
+      });
+    }
+
+    function exportAllData() {
+      showToast('Preparing export...');
+      
+      setTimeout(async () => {
+        const className = currentClass.replace('class', 'Class ');
+        let csvContent = `${className} - All Groups Summary\n`;
+        csvContent += `Exported: ${new Date().toLocaleString()}\n\n`;
+
+        for (let i = 0; i < GROUPS.length; i++) {
+          const groupKey = GROUPS[i];
+          const storageKey = `math-record-${currentClass}-${groupKey}`;
+          
+          try {
+            const result = await window.storage.get(storageKey, true);
+            if (result && result.value) {
+              const data = JSON.parse(result.value);
+              
+              csvContent += `\nGROUP ${i + 1}\n`;
+              csvContent += `Leader: ${data.leader || 'Not set'}\n`;
+              csvContent += `Section: ${data.section || 'Not set'}\n\n`;
+              csvContent += `Last Name,First Name,Activity,Practice,Quiz,Recitation,Lessons,Summative,Flashcards\n`;
+              
+              if (data.table5) {
+                data.table5.forEach(row => {
+                  // Skip empty rows
+                  if (row[0]?.trim() || row[1]?.trim()) {
+                    const csvRow = row.map(cell => `"${(cell || '').replace(/"/g, '""')}"`).join(',');
+                    csvContent += csvRow + '\n';
+                  }
+                });
+              }
+              
+              csvContent += '\n';
+            }
+          } catch (error) {
+            console.error(`Error exporting ${storageKey}:`, error);
+          }
+        }
+
+        // Download CSV
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `${className.replace(' ', '_')}_All_Groups_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showToast('✓ CSV exported successfully');
+      }, 100);
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+
+    // Allow Enter key to submit login
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginInputs = document.querySelectorAll('#loginUsername, #loginPassword');
+      loginInputs.forEach(input => {
+        input.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            handleLogin();
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
