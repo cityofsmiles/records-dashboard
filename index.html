@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sheet Activity Monitor</title>
+    <title>Math Records Dashboard</title>
     <link rel="manifest" href="manifest.json">
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; padding: 20px; margin: 0; }
@@ -49,7 +49,7 @@
 </head>
 <body>
 
-    <h1>Sheet Activity</h1>
+    <h1>Math Records Dashboard</h1>
     <button class="refresh-btn" onclick="fetchData()">Refresh Data</button>
     <div id="dashboard" class="grid">
         <p style="text-align:center;">Loading...</p>
@@ -101,7 +101,7 @@
                     }
                 }
 
-                // CHANGED: Creating an anchor (a) tag for direct linking
+                // Creating an anchor (a) tag for direct linking
                 const card = document.createElement('a'); 
                 card.className = 'card';
                 card.href = sheet.url; // Uses the full URL with GID from Apps Script
